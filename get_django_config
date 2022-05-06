@@ -1,0 +1,68 @@
+#!/bin/sh
+
+export help="
+Get the default database and media dir from a django config.
+
+Usage:
+$0 <app_directory> <property>
+
+Where app_directory is the location of your application (the one containing settings.py). If  a file called app_directory/../../venv/bin/activate exists, this file is used to activate the virtual env. 
+
+Supported property values are:
+  - dbtype
+  - dbpassword
+  - dbuser
+  - dbname
+  - dbhost
+  - datadir
+  - enter_maintenance_cmd
+  - exit_maintenance_cmd
+"
+
+if [ -z "$1" ]; then
+    echo ${help}
+    exit 1;
+fi
+
+app_directory=$1
+
+
+if [ -f "$app_directory/../../venv/bin/activate" ]; then
+  . $app_directory/../../venv/bin/activate
+fi
+export DJANGO_SETTINGS_MODULE=$(basename $app_directory).settings
+cd $app_directory/..
+
+export REQUESTED_PROPERTY=$2
+
+python << EOF
+from django.conf import settings
+import json
+import os
+import sys
+
+default_db = settings.DATABASES['default']
+dbtype = default_db['ENGINE']
+
+d = {
+    "dbtype": dbtype[dbtype.rfind('.') + 1:],
+    "dbpassword": default_db['PASSWORD'],
+    "dbuser": default_db['USER'],
+    "dbname": default_db['NAME'],
+    "dbhost": default_db['HOST'],
+    "datadir": settings.MEDIA_ROOT,
+    "enter_maintenance_cmd": "true",
+    "exit_maintenance_cmd": "true"
+}
+
+property = os.environ.get('REQUESTED_PROPERTY', None)
+if property:
+    val = d.get(property, None)
+    if val:
+        print(val)
+    else:
+        print(os.environ.get('help', ""))
+        sys.exit(1)
+else:
+    print(json.dumps(d))
+EOF
