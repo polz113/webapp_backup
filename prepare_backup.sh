@@ -13,6 +13,13 @@ Create snapshot, dump database.
 
 Usage:
 $0 <app_type> <app_directory> <backup_destination>
+
+Supported databases:
+  - mysql
+  - postgresql
+
+Supported filesystems:
+  - btrfs
 "
     echo $help;
     exit 1;
@@ -41,8 +48,19 @@ btrfs subvolume delete "${SNAPSHOT_DIR}/${SNAPSHOT_NAME}"
 echo btrfs subvolume snapshot –r "$DATA_DIR" "$SNAPSHOT_DIR/$SNAPSHOT_NAME"
 btrfs subvolume snapshot -r "$DATA_DIR" "$SNAPSHOT_DIR/$SNAPSHOT_NAME"
 # Start DB dump in background
-export PGPASSWORD=$($GWC dbpassword)
-pg_dump -h $($GWC dbhost) -U $($GWC dbuser) -f "$DB_DUMP_DIR/$DB_DUMP_NAME" $($GWC dbname) &
+
+case $($GWC dbtype) in
+    mysql) 
+        mysql -h $($GWC dbhost) --user $($GWC dbuser) --password $($GWC dbpassword) --result-file "$DB_DUMP_DIR/$DB_DUMP_NAME" $($GWC dbname) &
+    ;;
+    postgresql)
+        export PGPASSWORD=$($GWC dbpassword)
+        pg_dump -h $($GWC dbhost) -U $($GWC dbuser) -f "$DB_DUMP_DIR/$DB_DUMP_NAME" $($GWC dbname) & ;;
+    *)
+        echo "Unsupported database"
+        exit 1
+    ;;
+esac
 # Exit maintenance mode
 $($GWC exit_maintenance_cmd)
 # Wait for dump to finish
