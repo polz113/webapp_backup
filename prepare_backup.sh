@@ -47,7 +47,7 @@ $($GWC enter_maintenance_cmd)
 # Delete possible old snapshot
 btrfs subvolume delete "${SNAPSHOT_DIR}/${SNAPSHOT_NAME}"
 # Create FS snapshot
-echo btrfs subvolume snapshot –r "$DATA_DIR" "$SNAPSHOT_DIR/$SNAPSHOT_NAME"
+echo btrfs subvolume snapshot -r "$DATA_DIR" "$SNAPSHOT_DIR/$SNAPSHOT_NAME"
 btrfs subvolume snapshot -r "$DATA_DIR" "$SNAPSHOT_DIR/$SNAPSHOT_NAME"
 # Start DB dump in background
 
