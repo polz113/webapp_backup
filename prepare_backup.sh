@@ -25,10 +25,10 @@ Supported filesystems:
     exit 1;
 fi
 
-SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+SCRIPT_DIR=$(cd $(dirname "$0") && pwd)
 
 if [ -f "$SCRIPT_DIR/get_${WEBAPP_TYPE}_config" ]; then
-    GWC="$SCRIPT_DIR/get_${WEBAPP_TYPE}_config \"${WEBAPP_DIR}\""
+    GWC="$SCRIPT_DIR/get_${WEBAPP_TYPE}_config ${WEBAPP_DIR}"
 else
     echo "App type ${WEBAPP_TYPE} not supported";
     exit 1;
